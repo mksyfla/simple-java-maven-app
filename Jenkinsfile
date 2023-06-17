@@ -10,6 +10,11 @@ node {
         junit 'target/surefire-reports/*.xml'
       }
     }
+    stage('Deploy') {
+      input message: 'Lanjutkan ke tahap Deploy?'
+      sh './jenkins/scripts/deliver.sh'
+      sleep(time: 1, unit: 'MINUTES')
+    }
   }
 }
 
@@ -34,6 +39,13 @@ node {
 //         always {
 //           junit 'target/surefire-reports/*.xml'
 //         }
+//       }
+//     }
+//     stage('Deploy') {
+//       steps {
+//         input message: 'Lanjutkan ke tahap Deploy?'
+//         sh './jenkins/scripts/deliver.sh'
+//         sleep(time: 1, unit: 'MINUTES')
 //       }
 //     }
 //   }
