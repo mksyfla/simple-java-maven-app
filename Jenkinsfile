@@ -10,22 +10,22 @@ node {
         junit 'target/surefire-reports/*.xml'
       }
     }
-    stage('Checkout') {
-      checkout scm
+  }
+  stage('Checkout') {
+    checkout scm
+  }
+  stage('Deploy') {
+    input message: 'Lanjutkan ke tahap Deploy?'
+    withCredentials([sshUserPrivateKey(
+      credentialsId: 'ec2-server-key',
+      keyFileVariable: 'KEYFILE',
+    )]) {
+      sh "docker cp -i $KEYFILE target/maven-java.jar ubuntu@13.215.248.81:~/app.jar"
+      sh "docker cp -i $KEYFILE Dockerfile ubuntu@13.215.248.81:~/Dockerfile"
+      sh "ssh ssh -i $KEYFILE ubuntu@13.215.248.81 'sudo docker build -t maven-java . -f ~/Dockerfile'"
+      sh "ssh -i $KEYFILE ubuntu@13.215.248.81 'docker run -d -p 8080:8080 --n maven-java maven-java'"
     }
-    stage('Deploy') {
-      input message: 'Lanjutkan ke tahap Deploy?'
-      withCredentials([sshUserPrivateKey(
-        credentialsId: 'ec2-server-key',
-        keyFileVariable: 'KEYFILE',
-      )]) {
-        sh "docker cp -i $KEYFILE target/maven-java.jar ubuntu@13.215.248.81:~/app.jar"
-        sh "docker cp -i $KEYFILE Dockerfile ubuntu@13.215.248.81:~/Dockerfile"
-        sh "ssh ssh -i $KEYFILE ubuntu@13.215.248.81 'sudo docker build -t maven-java . -f ~/Dockerfile'"
-        sh "ssh -i $KEYFILE ubuntu@13.215.248.81 'docker run -d -p 8080:8080 --n maven-java maven-java'"
-      }
-      sleep(time: 1, unit: 'MINUTES')
-    }
+    sleep(time: 1, unit: 'MINUTES')
   }
 }
 
