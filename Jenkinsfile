@@ -12,21 +12,33 @@ node {
       }
     }
   }
+
   stage('Checkout') {
     checkout scm
   }
+
+  stage('Build Image') {
+    withCredentials([usernamePassword(
+      credentialsId: 'docker-hub-mksyfla',
+      usernameVariable: 'USER',
+      passwordVariable: 'PASSWORD'
+    )]) {
+      sh 'docker login -u $USER -p $PASSWORD'
+      sh 'docker build -t maven-app -f Dockerfile target/my-app-1.0-SNAPSHOT.jar'
+      sh 'docker tag maven-app:latest $USER/maven-app'
+      sh 'docker push $USER/maven-app'
+    }
+  }
+
   stage('Deploy') {
     input message: 'Lanjutkan ke tahap Deploy?'
     withCredentials([sshUserPrivateKey(
       credentialsId: 'ec2-server-key',
       keyFileVariable: 'KEYFILE',
     )]) {
-      sh 'ls && ls target'
-      sh 'java -jar target/my-app-1.0-SNAPSHOT.jar'
-      // sh "docker cp -i $KEYFILE target/my-app-1.0-SNAPSHOT.jar ubuntu@13.215.248.81:~/app.jar"
-      // sh "docker cp -i $KEYFILE Dockerfile ubuntu@13.215.248.81:~/Dockerfile"
-      // sh "ssh ssh -i $KEYFILE ubuntu@13.215.248.81 'sudo docker build -t maven-java . -f ~/Dockerfile'"
-      // sh "ssh -i $KEYFILE ubuntu@13.215.248.81 'docker run -d -p 8080:8080 --n maven-java maven-java'"
+      sh "scp -i $KEYFILE target/my-app-1.0-SNAPSHOT.jar ubuntu@ec2-13-215-248-81.ap-southeast-1.compute.amazonaws.com:~/app.jar"
+      sh "ssh -i $KEYFILE ubuntu@ec2-13-215-248-81.ap-southeast-1.compute.amazonaws.com 'docker build -t maven-java app.jar"
+      sh "ssh -i $KEYFILE ubuntu@ec2-13-215-248-81.ap-southeast-1.compute.amazonaws.com 'docker run -d -p 8080:8080 --name maven-app maven-java'"
     }
     sleep(time: 1, unit: 'MINUTES')
   }
