@@ -22,7 +22,7 @@ node {
         sh "scp -i $KEYFILE target/maven-java.jar ubuntu@13.215.248.81:~/app.jar"
         sh "scp -i $KEYFILE Dockerfile ubuntu@13.215.248.81:~/Dockerfile"
         sh "ssh ssh -i $KEYFILE ubuntu@13.215.248.81 'sudo docker build -t maven-java . -f ~/Dockerfile'"
-        sh "ssh -i $KEYFILE ubuntu@13.215.248.81 'docker run -d -p 8080:8080 --n maven-java maven-java'
+        sh "ssh -i $KEYFILE ubuntu@13.215.248.81 'docker run -d -p 8080:8080 --n maven-java maven-java'"
       }
       sleep(time: 1, unit: 'MINUTES')
     }
