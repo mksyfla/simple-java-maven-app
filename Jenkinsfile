@@ -17,8 +17,11 @@ node {
     checkout scm
   }
 
-  stage('Deploy') {
+  stage('Manual Approval') {
     input message: 'Lanjutkan ke tahap Deploy?'
+  }
+
+  stage('Deploy') {
     withCredentials([sshUserPrivateKey(
       credentialsId: 'ec2-server-key',
       keyFileVariable: 'KEYFILE',
