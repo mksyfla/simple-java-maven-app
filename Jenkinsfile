@@ -21,6 +21,7 @@ node {
       credentialsId: 'ec2-server-key',
       keyFileVariable: 'KEYFILE',
     )]) {
+      sh 'ls && ls /target'
       // sh "docker cp -i $KEYFILE target/maven-java.jar ubuntu@13.215.248.81:~/app.jar"
       // sh "docker cp -i $KEYFILE Dockerfile ubuntu@13.215.248.81:~/Dockerfile"
       // sh "ssh ssh -i $KEYFILE ubuntu@13.215.248.81 'sudo docker build -t maven-java . -f ~/Dockerfile'"
