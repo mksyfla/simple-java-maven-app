@@ -17,21 +17,6 @@ node {
     checkout scm
   }
 
-  // stage('Build Image') {
-  //   withCredentials([usernamePassword(
-  //     credentialsId: 'docker-hub-mksyfla',
-  //     usernameVariable: 'USER',
-  //     passwordVariable: 'PASSWORD'
-  //   )]) {
-  //     sh 'docker login -u $USER -p $PASSWORD'
-  //     sh 'ls && ls target'
-  //     sh 'java -jar target/my-app-1.0-SNAPSHOT.jar'
-  //     sh 'docker build -t maven-app -f Dockerfile target/my-app-1.0-SNAPSHOT.jar'
-  //     sh 'docker tag maven-app:latest $USER/maven-app'
-  //     sh 'docker push $USER/maven-app'
-  //   }
-  // }
-
   stage('Deploy') {
     input message: 'Lanjutkan ke tahap Deploy?'
     withCredentials([sshUserPrivateKey(
