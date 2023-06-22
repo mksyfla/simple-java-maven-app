@@ -26,7 +26,7 @@ node {
       sh "scp -i $KEYFILE target/my-app-1.0-SNAPSHOT.jar ubuntu@ec2-13-215-248-81.ap-southeast-1.compute.amazonaws.com:maven-app/app.jar"
       sh "ssh -i $KEYFILE ubuntu@ec2-13-215-248-81.ap-southeast-1.compute.amazonaws.com 'ls'"
       sh "ssh -i $KEYFILE ubuntu@ec2-13-215-248-81.ap-southeast-1.compute.amazonaws.com 'sudo docker build -t maven-app -f maven-app/Dockerfile maven-app/.'"
-      sh "ssh -i $KEYFILE ubuntu@ec2-13-215-248-81.ap-southeast-1.compute.amazonaws.com 'sudo docker run -d -p 8080:8080 -n maven-app maven-app:latest'"
+      sh "ssh -i $KEYFILE ubuntu@ec2-13-215-248-81.ap-southeast-1.compute.amazonaws.com 'sudo docker run -d -p 8080:8080 maven-app:latest'"
     }
     sleep(time: 1, unit: 'MINUTES')
   }
