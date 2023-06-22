@@ -23,7 +23,7 @@ node {
       credentialsId: 'ec2-server-key',
       keyFileVariable: 'KEYFILE',
     )]) {
-      sh "scp -i $KEYFILE target/my-app-1.0-SNAPSHOT.jar ubuntu@ec2-13-215-248-81.ap-southeast-1.compute.amazonaws.com:~/app.jar"
+      sh "scp -i $KEYFILE target/my-app-1.0-SNAPSHOT.jar ubuntu@ec2-13-215-248-81.ap-southeast-1.compute.amazonaws.com:maven-app/app.jar"
       sh "ssh -i $KEYFILE ubuntu@ec2-13-215-248-81.ap-southeast-1.compute.amazonaws.com 'ls'"
       sh "ssh -i $KEYFILE ubuntu@ec2-13-215-248-81.ap-southeast-1.compute.amazonaws.com 'sudo docker build -t maven-java -f Dockerfile .'"
       sh "ssh -i $KEYFILE ubuntu@ec2-13-215-248-81.ap-southeast-1.compute.amazonaws.com 'sudo docker run -d -p 8080:8080 -n maven-app mksyfla/maven-app:latest'"
