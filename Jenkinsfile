@@ -1,38 +1,31 @@
 node {
   docker.image('maven:3.9.0-eclipse-temurin-11').inside('-v /root/.m2:/root/.m2') {
     stage('Build') {
-      sh 'mvn -B -DskipTests clean package'
+      sh 'mvn -B -DskipTests clean package -DfinalName=maven-java'
     }
-  }
-
-  stage('Checkout') {
-    checkout scm
-  }
-
-  stage('Build Image') {
-    withCredentials([usernamePassword(
-      credentialsId: 'docker-hub-mksyfla',
-      usernameVariable: 'USER',
-      passwordVariable: 'PASSWORD'
-    )]) {
-      sh 'docker login -u $USER -p $PASSWORD'
-      sh 'docker build -t simple-java-maven -f Dockerfile .'
-      sh 'docker tag simple-java-maven:latest $USER/simple-java-maven'
-      sh 'docker push simple-java-maven'
+    stage('Test') {
+      try {
+        sh 'mvn test'
+      } finally {
+        junit 'target/surefire-reports/*.xml'
+      }
     }
-  }
-
-  stage('Deploy') {
-    input message: 'Lanjutkan ke tahap Deploy?'
-    withCredentials([sshUserPrivateKey(
-      credentialsId: 'ec2-server-key',
-      keyFileVariable: 'KEYFILE',
-    )]) {
-      sh "ssh -o StrictHostKeyChecking=no -i $KEYFILE ubuntu@ec2-13-215-248-81.ap-southeast-1.compute.amazonaws.com 'sudo docker pull mksyfla/simple-java-maven:latest'"
-      sh "ssh -o StrictHostKeyChecking=no -i $KEYFILE ubuntu@ec2-13-215-248-81.ap-southeast-1.compute.amazonaws.com 'sudo docker run -p 3000:3000 -d mksyfla/simple-java-maven:latest -n maven'"
-      sh "ssh -o StrictHostKeyChecking=no -i $KEYFILE ubuntu@ec2-13-215-248-81.ap-southeast-1.compute.amazonaws.com 'sudo docker exec -it maven /bin/bash ./jenkins/scripts/deliver.sh'"
+    stage('Checkout') {
+      checkout scm
     }
-    sleep(time: 1, unit: 'MINUTES')
+    stage('Deploy') {
+      input message: 'Lanjutkan ke tahap Deploy?'
+      withCredentials([sshUserPrivateKey(
+        credentialsId: 'ec2-server-key',
+        keyFileVariable: 'KEYFILE',
+      )]) {
+        sh "scp -i $KEYFILE target/maven-java.jar ubuntu@13.215.248.81:~/app.jar"
+        sh "scp -i $KEYFILE Dockerfile ubuntu@13.215.248.81:~/Dockerfile"
+        sh "ssh ssh -i $KEYFILE ubuntu@13.215.248.81 'sudo docker build -t maven-java . -f ~/Dockerfile'"
+        sh "ssh -i $KEYFILE ubuntu@13.215.248.81 'docker run -d -p 8080:8080 --n maven-java maven-java'
+      }
+      sleep(time: 1, unit: 'MINUTES')
+    }
   }
 }
 
